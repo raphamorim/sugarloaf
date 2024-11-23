@@ -1,0 +1,54 @@
+name: Test
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  test-native:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup toolchain install stable --profile minimal
+      - run: rustup component add rustfmt clippy
+      - run: cargo fetch
+      - run: cargo fmt -- --check --color always
+      - run: cargo clippy --all-targets --all-features
+      - run: cargo test --release
+  msys2-build-test: #cargo test doesn't necessarily build the exec we want
+    strategy:
+      matrix:
+        sys: [MINGW64, UCRT64, CLANG64]
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: base-devel git
+        pacboy: >-
+          rust:p
+          cc:p
+          pkgconf:p
+          cmake:p
+          freetype:p
+          python:p
+          fontconfig:p
+
+    - name: Run cargo 
+      shell: msys2 {0}
+      run: cargo build --release
