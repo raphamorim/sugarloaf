@@ -29,7 +29,7 @@ targets = [
 ]
 
 [dependencies]
-wgpu = "23.0.0"
+wgpu = "23.0.1"
 bytemuck = { version = "1.17.0", features = [ "derive" ] }
 tracing = "0.1.40"
 serde = { version = "1.0.208", features = ["derive"] }

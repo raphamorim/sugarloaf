@@ -2,6 +2,9 @@ install:
 	cargo install cargo-server
 	cargo install wasm-bindgen-cli
 
+dev:
+	cargo run --example text
+
 run: build
 	cargo server
 
